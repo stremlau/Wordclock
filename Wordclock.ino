@@ -159,7 +159,7 @@ void showSimple(CRGB on, CRGB off) {
  * Fades new words in and old words out.
  */
 void showFade(CRGB on, CRGB off) {
-  if (new_words_length > 0) {
+  if (new_words_length > 0 || old_words_length > 0) {
     for (int e = 1; e <= 256/8; e++) {
       int i = e * 8 - 1;
       fillLeds(off);
@@ -168,6 +168,31 @@ void showFade(CRGB on, CRGB off) {
       showAllWords(on.lerp8(off, i), old_words, old_words_length);
       FastLED.show();
       delay(50);
+    }
+  }
+  
+  showSimple(on, off);
+}
+
+/**
+ * Rolls characters out and in to change display..
+ */
+void showRollDown(CRGB on, CRGB off) {
+  if (new_words_length > 0 || old_words_length > 0) {
+    for (int e = 1; e <= 10; e++) {
+      fillLeds(off);
+      showAllWords(on, const_words, const_words_length, 0, e);
+      showAllWords(on, old_words, old_words_length, 0, e);
+      FastLED.show();
+      delay(150);
+    }
+
+    for (int e = -10; e <= 0; e++) {
+      fillLeds(off);
+      showAllWords(on, const_words, const_words_length, 0, e);
+      showAllWords(on, new_words, new_words_length, 0, e);
+      FastLED.show();
+      delay(150);
     }
   }
   
@@ -200,19 +225,13 @@ void _fadeall() { for(int i = 0; i < 10 * 11; i++) { leds[i].nscale8(180); } } /
  * Removes old words and inserts new words in a typewriter style.
  */
 void showTypewriter(CRGB on, CRGB off) {
-  if (new_words_length > 0) {
-    byte max_old_word = 0;
-    byte max_new_word = 0;
-  
-    for (byte i = 0; i < old_words_length; i++)
-      max_old_word = max(max_old_word, old_words[i][2]);
-      
-    for (byte i = 0; i < new_words_length; i++)
-      max_new_word = max(max_new_word, new_words[i][2]);
+  if (new_words_length > 0 || old_words_length > 0) {
+    byte max_old_word = 6;
+    byte max_new_word = 6;
   
     for (byte i = 0; i <= max_old_word; i++) {
       fillLeds(off);
-      showAllWords(on, old_words, old_words_length, 200, i);
+      showAllWords(on, old_words, old_words_length, 0, 0, 200, i);
       showAllWords(on, const_words, const_words_length);
       FastLED.show();
       delay(150);
@@ -221,7 +240,7 @@ void showTypewriter(CRGB on, CRGB off) {
     fillLeds(off);
     showAllWords(on, const_words, const_words_length);
     for (byte i = 0; i <= max_new_word; i++) {
-      showAllWords(on, new_words, new_words_length, i, 0);
+      showAllWords(on, new_words, new_words_length, 0, 0, i, 0);
       FastLED.show();
       delay(150);
     }
@@ -320,7 +339,14 @@ void fillLeds(CRGB off) {
  * Shows a array of words in a specific color.
  */
 void showAllWords(CRGB color, const byte *wds[], byte wds_length) {
-  showAllWords(color, wds, wds_length, 200, 0);
+  showAllWords(color, wds, wds_length, 0, 0, 200, 0);
+}
+
+/**
+ * Shows a array of words in a specific color.
+ */
+void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte xadd, byte yadd) {
+  showAllWords(color, wds, wds_length, xadd, yadd, 200, 0);
 }
 
 /**
@@ -328,9 +354,9 @@ void showAllWords(CRGB color, const byte *wds[], byte wds_length) {
  * @param maxlen determines the max length of every word.
  * @param cut cuts the x last characters of every word
  */
-void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte maxlen, byte cut) {
+void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte xadd, byte yadd, byte maxlen, byte cut) {
   for (byte i = 0; i < wds_length; i++) {
-    setLeds(wds[i][0], wds[i][1], color, min(max(wds[i][2] - cut, 0), maxlen), false);
+    setLeds(wds[i][0] + xadd, wds[i][1] + yadd, color, min(max(wds[i][2] - cut, 0), maxlen), false);
   }
 }
 
@@ -338,9 +364,10 @@ void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte maxlen, b
  * Sets a number of leds starting at x, y to the a specific color.
  * When add is true the color is added to the existing color at the positions.
  */
-void setLeds(int x, int y, CRGB color, int len, bool add) {
-  int start_led = !(x % 2) ? x * 11 + y : x * 11 + (11 - y) - 1;
-  int dir = !(x % 2) ? 1 : -1;
+void setLeds(int y, int x, CRGB color, int len, bool add) {
+  if (y < 0 || y > 9) return;
+  int start_led = !(y % 2) ? y * 11 + x : y * 11 + (11 - x) - 1;
+  int dir = !(y % 2) ? 1 : -1;
 
   if (add) {
     for (int i = 0; i < len; i++) {
@@ -356,7 +383,7 @@ void setLeds(int x, int y, CRGB color, int len, bool add) {
 
 /**
  * Shows a 5x7 char at a specific position.
- */
+
 void showChar(byte x, byte y, unsigned char c, CRGB color) {
   for (int8_t i=0; i<6; i++ ) {
     uint8_t line;
@@ -372,4 +399,4 @@ void showChar(byte x, byte y, unsigned char c, CRGB color) {
     }
   }
 }
-
+ */
