@@ -109,6 +109,7 @@ void loop()
     case 1: showFade(foreground, background); break;
     case 2: showTypewriter(foreground, background); break;
     case 3: showMatrix(foreground, background); break;
+    case 4: showRollDown(foreground, background); break;
   }
   
   FastLED.show();
@@ -128,7 +129,7 @@ void generateWords() {
   
   byte shour = hourFormat12();
   switch(minute() / 5) {
-    case 0:  if (shour == 1) shour = 0;                addWord(UHR); break;
+    case 0:  if (shour == 1) shour = 0;                 addWord(UHR); break;
     case 1:  addWord(FUENF);   addWord(NACH);                         break;
     case 2:  addWord(ZEHN);    addWord(NACH);                         break;
     case 3:  addWord(VIERTEL); addWord(NACH);                         break;
@@ -184,15 +185,15 @@ void showRollDown(CRGB on, CRGB off) {
       showAllWords(on, const_words, const_words_length, 0, e);
       showAllWords(on, old_words, old_words_length, 0, e);
       FastLED.show();
-      delay(150);
+      delay(80 + (10 - e) * 5);
     }
 
-    for (int e = -10; e <= 0; e++) {
+    for (int e = 10; e >= 0; e--) {
       fillLeds(off);
-      showAllWords(on, const_words, const_words_length, 0, e);
-      showAllWords(on, new_words, new_words_length, 0, e);
+      showAllWords(on, const_words, const_words_length, 0, -e);
+      showAllWords(on, new_words, new_words_length, 0, -e);
       FastLED.show();
-      delay(150);
+      delay(80 + (10 - e) * 8);
     }
   }
   
@@ -345,7 +346,7 @@ void showAllWords(CRGB color, const byte *wds[], byte wds_length) {
 /**
  * Shows a array of words in a specific color.
  */
-void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte xadd, byte yadd) {
+void showAllWords(CRGB color, const byte *wds[], byte wds_length, char xadd, char yadd) {
   showAllWords(color, wds, wds_length, xadd, yadd, 200, 0);
 }
 
@@ -354,9 +355,9 @@ void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte xadd, byt
  * @param maxlen determines the max length of every word.
  * @param cut cuts the x last characters of every word
  */
-void showAllWords(CRGB color, const byte *wds[], byte wds_length, byte xadd, byte yadd, byte maxlen, byte cut) {
+void showAllWords(CRGB color, const byte *wds[], byte wds_length, char xadd, char yadd, byte maxlen, byte cut) {
   for (byte i = 0; i < wds_length; i++) {
-    setLeds(wds[i][0] + xadd, wds[i][1] + yadd, color, min(max(wds[i][2] - cut, 0), maxlen), false);
+    setLeds(wds[i][0] + yadd, wds[i][1] + xadd, color, min(max(wds[i][2] - cut, 0), maxlen), false);
   }
 }
 
