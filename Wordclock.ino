@@ -227,8 +227,14 @@ void _fadeall() { for(int i = 0; i < 10 * 11; i++) { leds[i].nscale8(180); } } /
  */
 void showTypewriter(CRGB on, CRGB off) {
   if (new_words_length > 0 || old_words_length > 0) {
-    byte max_old_word = 6;
-    byte max_new_word = 6;
+    byte max_old_word = 0;
+    byte max_new_word = 0;
+  
+    for (byte i = 0; i < old_words_length; i++)
+      max_old_word = max(max_old_word, old_words[i][2]);
+      
+    for (byte i = 0; i < new_words_length; i++)
+      max_new_word = max(max_new_word, new_words[i][2]);
   
     for (byte i = 0; i <= max_old_word; i++) {
       fillLeds(off);
