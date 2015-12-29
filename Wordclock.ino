@@ -1,5 +1,6 @@
 #include <Adafruit_GFX.h>
 
+#include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include <FastLED.h>
 #include <DS3232RTC.h>    //http://github.com/JChristensen/DS3232RTC
@@ -50,8 +51,8 @@ byte const_words_length = 0;
 /**
  * Fore- and background color for the letters.
  */
-CRGB foreground = CRGB(0, 255, 0);
-CRGB background = CRGB(10, 50, 5); //CRGB(0, 255, 0) CRGB(10, 50, 5)
+CRGB foreground = CRGB(255, 245, 220);
+CRGB background = CRGB(30, 30, 20); //CRGB(0, 255, 0) CRGB(10, 50, 5)
 
 /**
  * Stores the effect number.
@@ -78,7 +79,7 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, 7>(leds, 10 * 11 + 4);
   FastLED.setBrightness(255);
 
-  for (int i = 0; i < 10 * 11; i++) {
+  for (int i = 0; i < 10 * 11 + 4; i++) {
     leds[i] = CRGB::Red;
   }
   FastLED.show();
@@ -91,6 +92,8 @@ void setup() {
   
   FastLED.show();
   delay(1500); */
+
+  loadSettings();
   
   Serial.println("initialized");
 }
@@ -100,16 +103,19 @@ void loop()
   generateWords();
 
   handleBluetooth();
-
-  //255, 120, 0
-  //CRGB(255, 245, 220), CRGB(30, 30, 20)
-  //CRGB(255, 120, 30), CRGB(10, 10, 7)
+  
+  showCorners(foreground, background);
+  
   switch (effect) {
-    case 0: showSimple(foreground, background); break;
     case 1: showFade(foreground, background); break;
     case 2: showTypewriter(foreground, background); break;
     case 3: showMatrix(foreground, background); break;
     case 4: showRollDown(foreground, background); break;
+    case 5: showParty(foreground, background); break;
+    case 0:
+    default:
+      showSimple(foreground, background);
+      break;
   }
   
   FastLED.show();
@@ -145,6 +151,13 @@ void generateWords() {
   
   if (shour == 13) shour = 1;
   addWord(HOUR[shour]);
+}
+
+void showCorners(CRGB on, CRGB off) {
+  byte num = minute() % 5;
+  for (byte i = 0; i < 4; i++) {
+    leds[10 * 11 + i] = (i < num) ?  on : off;
+  }
 }
 
 /**
@@ -241,7 +254,7 @@ void showTypewriter(CRGB on, CRGB off) {
       showAllWords(on, old_words, old_words_length, 0, 0, 200, i);
       showAllWords(on, const_words, const_words_length);
       FastLED.show();
-      delay(150);
+      delay(180);
     }
     
     fillLeds(off);
@@ -249,11 +262,27 @@ void showTypewriter(CRGB on, CRGB off) {
     for (byte i = 0; i <= max_new_word; i++) {
       showAllWords(on, new_words, new_words_length, 0, 0, i, 0);
       FastLED.show();
-      delay(150);
+      delay(180);
     }
   }
 
   showSimple(on, off);
+}
+
+/**
+ * Rolls characters out and in to change display..
+ */
+void showParty(CRGB on, CRGB off) {
+  static byte e = 0;
+  e++;
+  if (e < 3) return;
+  e = 0;
+  for(int i = 0; i < 110; i++) {
+    leds[i] = CHSV(random8(), 255, 180);
+  }
+  
+  showAllWords(on, new_words, new_words_length);
+  showAllWords(on, const_words, const_words_length);
 }
 
 /**
@@ -282,6 +311,48 @@ void handleBluetooth() {
         showEsIst = (btSerial.read() == 1);
         btSerial.read(); btSerial.read();
         break;
+      case 'T': { //time
+        byte h = btSerial.read();
+        byte m = btSerial.read();
+        byte s = btSerial.read();
+        setTime(h, m, s, day(), month(), year());
+        RTC.set(now());
+        break;
+      }
+      case 'S': {
+        btSerial.read(); btSerial.read(); btSerial.read(); storeSettings();
+        break;
+      }
+      case 'G': { //get
+        switch (btSerial.read()) {
+          case 'F':
+            btSerial.write('F');
+            btSerial.write(foreground.r);
+            btSerial.write(foreground.g);
+            btSerial.write(foreground.b);
+            break;
+          case 'B':
+            btSerial.write('B');
+            btSerial.write(background.r);
+            btSerial.write(background.g);
+            btSerial.write(background.b);
+            break;
+          case 'E':
+            btSerial.write('E');
+            btSerial.write(effect);
+            btSerial.write(showEsIst);
+            btSerial.write('E');
+            break;
+          case 'T':
+            btSerial.write('T');
+            btSerial.write(hour());
+            btSerial.write(minute());
+            btSerial.write(second());
+            break;
+        }
+        btSerial.read(); btSerial.read();
+        break;
+      }
       default: {
         Serial.print("Unknown command ");
         Serial.println(type);
@@ -386,6 +457,34 @@ void setLeds(int y, int x, CRGB color, int len, bool add) {
       leds[start_led + i * dir] = color;
     }
   }
+}
+
+/**
+ * Stores settings to EEPROM.
+ */
+void storeSettings() {
+  EEPROM.write(0, foreground.r);
+  EEPROM.write(1, foreground.g);
+  EEPROM.write(2, foreground.b);
+  EEPROM.write(3, background.r);
+  EEPROM.write(4, background.g);
+  EEPROM.write(5, background.b);
+  EEPROM.write(6, effect);
+  EEPROM.write(7, showEsIst);
+}
+
+/** 
+ * Loads settings from EEPROM.
+ */
+void loadSettings() {
+  foreground.r = EEPROM.read(0);
+  foreground.g = EEPROM.read(1);
+  foreground.b = EEPROM.read(2);
+  background.r = EEPROM.read(3);
+  background.g = EEPROM.read(4);
+  background.b = EEPROM.read(5);
+  effect =       EEPROM.read(6);
+  showEsIst =    EEPROM.read(7);
 }
 
 /**
