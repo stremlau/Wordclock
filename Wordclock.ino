@@ -71,33 +71,33 @@ byte hwVersion = 0;
  */
 bool showEsIst = false;
 
-TimeChangeRule aEDT = {"AEDT", First, Sun, Oct, 2, 660};    //UTC + 11 hours
-TimeChangeRule aEST = {"AEST", First, Sun, Apr, 3, 600};    //UTC + 10 hours
+//TimeChangeRule aEDT = {"AEDT", First, Sun, Oct, 2, 660};    //UTC + 11 hours
+//TimeChangeRule aEST = {"AEST", First, Sun, Apr, 3, 600};    //UTC + 10 hours
 TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     //Central European Summer Time
 TimeChangeRule CET = {"CET ", Last, Sun, Oct, 3, 60};       //Central European Standard Time
-TimeChangeRule BST = {"BST", Last, Sun, Mar, 1, 60};        //British Summer Time
-TimeChangeRule GMT = {"GMT", Last, Sun, Oct, 2, 0};         //Standard Time
-TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  //Eastern Daylight Time = UTC - 4 hours
-TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   //Eastern Standard Time = UTC - 5 hours
-TimeChangeRule usCDT = {"CDT", Second, dowSunday, Mar, 2, -300};
-TimeChangeRule usCST = {"CST", First, dowSunday, Nov, 2, -360};
-TimeChangeRule usMDT = {"MDT", Second, dowSunday, Mar, 2, -360};
-TimeChangeRule usMST = {"MST", First, dowSunday, Nov, 2, -420};
-TimeChangeRule usPDT = {"PDT", Second, dowSunday, Mar, 2, -420};
-TimeChangeRule usPST = {"PST", First, dowSunday, Nov, 2, -480};
+//TimeChangeRule BST = {"BST", Last, Sun, Mar, 1, 60};        //British Summer Time
+//TimeChangeRule GMT = {"GMT", Last, Sun, Oct, 2, 0};         //Standard Time
+//TimeChangeRule usEDT = {"EDT", Second, Sun, Mar, 2, -240};  //Eastern Daylight Time = UTC - 4 hours
+//TimeChangeRule usEST = {"EST", First, Sun, Nov, 2, -300};   //Eastern Standard Time = UTC - 5 hours
+//TimeChangeRule usCDT = {"CDT", Second, dowSunday, Mar, 2, -300};
+//TimeChangeRule usCST = {"CST", First, dowSunday, Nov, 2, -360};
+//TimeChangeRule usMDT = {"MDT", Second, dowSunday, Mar, 2, -360};
+//TimeChangeRule usMST = {"MST", First, dowSunday, Nov, 2, -420};
+//TimeChangeRule usPDT = {"PDT", Second, dowSunday, Mar, 2, -420};
+//TimeChangeRule usPST = {"PST", First, dowSunday, Nov, 2, -480};
 
-Timezone ausET(aEDT, aEST); //Australia Eastern Time Zone (Sydney, Melbourne)
+//Timezone ausET(aEDT, aEST); //Australia Eastern Time Zone (Sydney, Melbourne)
 Timezone CE(CEST, CET); //Central European Time (Frankfurt, Paris)
-Timezone UK(BST, GMT); //United Kingdom (London, Belfast)
-Timezone usET(usEDT, usEST); //US Eastern Time Zone (New York, Detroit)
-Timezone usCT(usCDT, usCST); //US Central Time Zone (Chicago, Houston)
-Timezone usMT(usMDT, usMST); //US Mountain Time Zone (Denver, Salt Lake City)
-Timezone usAZ(usMST, usMST); //Arizona is US Mountain Time Zone but does not use DST
-Timezone usPT(usPDT, usPST); //US Pacific Time Zone (Las Vegas, Los Angeles)
+//Timezone UK(BST, GMT); //United Kingdom (London, Belfast)
+//Timezone usET(usEDT, usEST); //US Eastern Time Zone (New York, Detroit)
+//Timezone usCT(usCDT, usCST); //US Central Time Zone (Chicago, Houston)
+//Timezone usMT(usMDT, usMST); //US Mountain Time Zone (Denver, Salt Lake City)
+//Timezone usAZ(usMST, usMST); //Arizona is US Mountain Time Zone but does not use DST
+//Timezone usPT(usPDT, usPST); //US Pacific Time Zone (Las Vegas, Los Angeles)
 
-Timezone timezones[] = {ausET, CE, UK, usET, usCT, usMT, usAZ, usPT};
+Timezone timezones[] = {CE};
 
-byte timezone = 1;
+byte timezone = 0;
 
 void setup() {
   Serial.begin(9600);
