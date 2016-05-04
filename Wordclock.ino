@@ -60,6 +60,12 @@ CRGB background = CRGB(30, 30, 20); //CRGB(0, 255, 0) CRGB(10, 50, 5)
 byte effect = 2;
 
 /**
+ * Hardware version.
+ */
+
+int hwVersion = 0;
+
+/**
  * Should "Es ist" be showed?
  */
 bool showEsIst = false;
@@ -446,6 +452,7 @@ void setLeds(int y, int x, CRGB color, int len, bool add) {
   if (y < 0 || y > 9) return;
   int start_led = !(y % 2) ? y * 11 + x : y * 11 + (11 - x) - 1;
   int dir = !(y % 2) ? 1 : -1;
+  if (hwVersion == 1) dir = !dir;
 
   if (add) {
     for (int i = 0; i < len; i++) {
@@ -471,6 +478,7 @@ void storeSettings() {
   EEPROM.write(5, background.b);
   EEPROM.write(6, effect);
   EEPROM.write(7, showEsIst);
+  EEPROM.write(8, hwVersion);
 }
 
 /** 
@@ -485,6 +493,7 @@ void loadSettings() {
   background.b = EEPROM.read(5);
   effect =       EEPROM.read(6);
   showEsIst =    EEPROM.read(7);
+  hwVersion =    EEPROM.read(8);
 }
 
 /**
