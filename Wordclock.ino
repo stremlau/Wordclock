@@ -52,8 +52,8 @@ byte const_words_length = 0;
 /**
  * Fore- and background color for the letters.
  */
-CRGB foreground = CRGB(255, 245, 220);
-CRGB background = CRGB(30, 30, 20); //CRGB(0, 255, 0) CRGB(10, 50, 5)
+CRGB foreground = CRGB(0, 0, 255);
+CRGB background = CRGB(5, 5, 5); //CRGB(0, 255, 0) CRGB(10, 50, 5)
 
 /**
  * Stores the effect number.
@@ -79,7 +79,7 @@ byte darkBrightness = 40;
 /**
  * Should "Es ist" be showed?
  */
-bool showEsIst = false;
+bool showEsIst = true;
 
 //TimeChangeRule aEDT = {"AEDT", First, Sun, Oct, 2, 660};    //UTC + 11 hours
 //TimeChangeRule aEST = {"AEST", First, Sun, Apr, 3, 600};    //UTC + 10 hours
@@ -140,6 +140,7 @@ void setup() {
   delay(1500); */
 
   loadSettings();
+  //storeSettings();
   
   Serial.println("initialized");
 }
@@ -538,6 +539,7 @@ void showAllWords(CRGB color, const byte *wds[], byte wds_length, char xadd, cha
  * When add is true the color is added to the existing color at the positions.
  */
 void setLeds(int y, int x, CRGB color, int len, bool add) {
+  if (hwVersion == 2) y = 9 - y;
   if (y < 0 || y > 9) return;
   int start_led = !(y % 2) ? y * 11 + x : y * 11 + (11 - x) - 1;
   int dir = !(y % 2) ? 1 : -1;
