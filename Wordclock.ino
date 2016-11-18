@@ -67,6 +67,16 @@ byte effect = 2;
 byte hwVersion = 0;
 
 /**
+ * Threshold for dark mode (light sensor)
+ */
+byte lightThreshold = 15;
+
+/**
+ * Brightness in dark mode
+ */
+byte darkBrightness = 40;
+
+/**
  * Should "Es ist" be showed?
  */
 bool showEsIst = false;
@@ -101,7 +111,7 @@ byte timezone = 0;
 
 void setup() {
   Serial.begin(9600);
-
+ 
   //setup real time clock
   setSyncProvider(RTC.get);
   if(timeStatus() != timeSet) 
@@ -115,8 +125,9 @@ void setup() {
   FastLED.setBrightness(255);
 
   for (int i = 0; i < 10 * 11 + 4; i++) {
-    leds[i] = CRGB::Red;
+    leds[i] = CRGB::Black;
   }
+  
   FastLED.show();
   delay(100);
 
@@ -135,6 +146,8 @@ void setup() {
 
 void loop()
 {
+  checkLightSensor();
+  
   generateWords();
 
   handleBluetooth();
@@ -155,6 +168,15 @@ void loop()
   
   FastLED.show();
   delay(100);
+}
+
+void checkLightSensor() {
+  if (map(analogRead(A6), 0, 1023, 0, 255) < lightThreshold) {
+    FastLED.setBrightness(darkBrightness);
+  }
+  else {
+    FastLED.setBrightness(255);
+  }
 }
 
 /**
@@ -373,6 +395,12 @@ void handleBluetooth() {
         btSerial.read(); btSerial.read(); btSerial.read(); storeSettings();
         break;
       }
+      case 'L': {
+        lightThreshold = btSerial.read();
+        darkBrightness = btSerial.read();
+        btSerial.read();
+        break;
+      }
       case 'G': { //get
         switch (btSerial.read()) {
           case 'F':
@@ -409,6 +437,12 @@ void handleBluetooth() {
             btSerial.write('Z');
             btSerial.write(timezone);
             btSerial.write('Z'); btSerial.write('Z');
+            break;
+          case 'L':
+            btSerial.write('L');
+            btSerial.write(lightThreshold);
+            btSerial.write(darkBrightness);
+            btSerial.write('L');
             break;
         }
         btSerial.read(); btSerial.read();
@@ -535,22 +569,26 @@ void storeSettings() {
   EEPROM.write(7, showEsIst);
   EEPROM.write(8, hwVersion);
   EEPROM.write(9, timezone);
+  EEPROM.write(10, lightThreshold);
+  EEPROM.write(11, darkBrightness);
 }
 
 /** 
  * Loads settings from EEPROM.
  */
 void loadSettings() {
-  foreground.r = EEPROM.read(0);
-  foreground.g = EEPROM.read(1);
-  foreground.b = EEPROM.read(2);
-  background.r = EEPROM.read(3);
-  background.g = EEPROM.read(4);
-  background.b = EEPROM.read(5);
-  effect =       EEPROM.read(6);
-  showEsIst =    EEPROM.read(7);
-  hwVersion =    EEPROM.read(8);
-  timezone =     EEPROM.read(9);
+  foreground.r =   EEPROM.read(0);
+  foreground.g =   EEPROM.read(1);
+  foreground.b =   EEPROM.read(2);
+  background.r =   EEPROM.read(3);
+  background.g =   EEPROM.read(4);
+  background.b =   EEPROM.read(5);
+  effect =         EEPROM.read(6);
+  showEsIst =      EEPROM.read(7);
+  hwVersion =      EEPROM.read(8);
+  timezone =       EEPROM.read(9);
+  lightThreshold = EEPROM.read(10);
+  darkBrightness = EEPROM.read(11);
 }
 
 /**
