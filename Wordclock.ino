@@ -10,6 +10,8 @@
 
 //#include <glcdfont.c>
 
+#define EEPROM_VERSION 3
+
 SoftwareSerial btSerial(8, 9);
 CRGB leds[10 * 11 + 4];
 
@@ -53,7 +55,7 @@ byte const_words_length = 0;
  * Fore- and background color for the letters.
  */
 CRGB foreground = CRGB(0, 0, 255);
-CRGB background = CRGB(5, 5, 5); //CRGB(0, 255, 0) CRGB(10, 50, 5)
+CRGB background = CRGB(0, 0, 0); //CRGB(0, 255, 0) CRGB(10, 50, 5)
 
 /**
  * Stores the effect number.
@@ -139,8 +141,12 @@ void setup() {
   FastLED.show();
   delay(1500); */
 
+  // update EEPROM if other EEPROM_VERSION is used in code
+  if (EEPROM.read(0) != EEPROM_VERSION || EEPROM.read(1) != EEPROM_VERSION) {
+    storeSettings();
+  }
+
   loadSettings();
-  //storeSettings();
   
   Serial.println("initialized");
 }
@@ -172,7 +178,9 @@ void loop()
 }
 
 void checkLightSensor() {
-  if (map(analogRead(A6), 0, 1023, 0, 255) < lightThreshold) {
+  byte lightLevel = map(analogRead(A6), 0, 1023, 0, 255);
+  
+  if (lightLevel < lightThreshold) {
     FastLED.setBrightness(darkBrightness);
   }
   else {
@@ -559,38 +567,43 @@ void setLeds(int y, int x, CRGB color, int len, bool add) {
 
 /**
  * Stores settings to EEPROM.
+ * Increase EEPROM_VERSION if you change the schema.
  */
 void storeSettings() {
-  EEPROM.write(0, foreground.r);
-  EEPROM.write(1, foreground.g);
-  EEPROM.write(2, foreground.b);
-  EEPROM.write(3, background.r);
-  EEPROM.write(4, background.g);
-  EEPROM.write(5, background.b);
-  EEPROM.write(6, effect);
-  EEPROM.write(7, showEsIst);
-  EEPROM.write(8, hwVersion);
-  EEPROM.write(9, timezone);
-  EEPROM.write(10, lightThreshold);
-  EEPROM.write(11, darkBrightness);
+  EEPROM.write(0, EEPROM_VERSION);
+  EEPROM.write(1, EEPROM_VERSION);
+  
+  EEPROM.write(2, foreground.r);
+  EEPROM.write(3, foreground.g);
+  EEPROM.write(4, foreground.b);
+  EEPROM.write(5, background.r);
+  EEPROM.write(6, background.g);
+  EEPROM.write(7, background.b);
+  EEPROM.write(8, effect);
+  EEPROM.write(9, showEsIst);
+  EEPROM.write(10, hwVersion);
+  EEPROM.write(11, timezone);
+  EEPROM.write(12, lightThreshold);
+  EEPROM.write(13, darkBrightness);
 }
 
 /** 
  * Loads settings from EEPROM.
+ * Increase EEPROM_VERSION if you change the schema.
  */
 void loadSettings() {
-  foreground.r =   EEPROM.read(0);
-  foreground.g =   EEPROM.read(1);
-  foreground.b =   EEPROM.read(2);
-  background.r =   EEPROM.read(3);
-  background.g =   EEPROM.read(4);
-  background.b =   EEPROM.read(5);
-  effect =         EEPROM.read(6);
-  showEsIst =      EEPROM.read(7);
-  hwVersion =      EEPROM.read(8);
-  timezone =       EEPROM.read(9);
-  lightThreshold = EEPROM.read(10);
-  darkBrightness = EEPROM.read(11);
+  foreground.r =   EEPROM.read(2);
+  foreground.g =   EEPROM.read(3);
+  foreground.b =   EEPROM.read(4);
+  background.r =   EEPROM.read(5);
+  background.g =   EEPROM.read(6);
+  background.b =   EEPROM.read(7);
+  effect =         EEPROM.read(8);
+  showEsIst =      EEPROM.read(9);
+  hwVersion =      EEPROM.read(10);
+  timezone =       EEPROM.read(11);
+  lightThreshold = EEPROM.read(12);
+  darkBrightness = EEPROM.read(13);
 }
 
 /**
